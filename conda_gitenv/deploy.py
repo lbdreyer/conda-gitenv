@@ -98,8 +98,9 @@ def create_env(pkgs, target, pkg_cache):
                 conda.install.link(target, dist_name)
 
 
-def deploy_repo(repo, target):
+def deploy_repo(repo, target, single_env_to_deploy):
     env_tags = tags_by_env(repo)
+    
     for branch in repo.branches:
         # We only want environment branches, not manifest branches.
         if not branch.name.startswith(manifest_branch_prefix):
@@ -111,11 +112,21 @@ def deploy_repo(repo, target):
             manifest_branch = repo.branches[manifest_branch_name]
             branch.checkout()
             labelled_tags = tags_by_label(os.path.join(repo.working_dir, 'labels'))
-            # We want to deploy all tags which have a label, as well as the latest tag.
+
+            # Create a latest tag that points to the most recently tagged environment.
             if env_tags.get(branch.name):
                 latest_tag = max(env_tags[branch.name],
                                  key=lambda t: t.commit.committed_date)
                 labelled_tags['latest'] = latest_tag.name
+
+            # If a single labelled environment is define, deploy only that.
+            if single_env_to_deploy:
+                env, desired_label = single_env_to_deploy.split('/')
+                if branch.name == env:
+                    labelled_tags = {desired_label: labelled_tags[desired_label]}
+                else:
+                    continue
+            
             for tag in set(labelled_tags.values()):
                 deploy_tag(repo, tag, target)
             for label, tag in labelled_tags.items():
@@ -136,6 +147,7 @@ def deploy_repo(repo, target):
 def configure_parser(parser):
     parser.add_argument('repo_uri', help='Repo to deploy.')
     parser.add_argument('target', help='Location to deploy the environments to.')
+    parser.add_argument('env_label', nargs='?', help='Specific labelled environment to deploy, in the form "{environment}/{label}".', default=None)
     parser.set_defaults(function=handle_args)
     return parser
 
@@ -144,7 +156,7 @@ def handle_args(args):
     with tempdir() as repo_directory:
         repo = Repo.clone_from(args.repo_uri, repo_directory)
         create_tracking_branches(repo)
-        deploy_repo(repo, args.target)
+        deploy_repo(repo, args.target, args.env_label)
 
 
 def main():
