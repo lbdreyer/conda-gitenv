@@ -70,8 +70,8 @@ class Test(unittest.TestCase):
             self.assertTrue(self.check_link_exists(tmpdir, 'bleeding', 'next'))
             self.assertTrue(self.check_link_exists(tmpdir, 'bleeding', 'latest'))
             
-            self.assertFalse(os.path.exists(tmpdir, 'default', 'current'))                       
-            self.assertFalse(os.path.exists(tmpdir, 'default', 'latest'))
+            self.assertFalse(os.path.exists(os.path.join(tmpdir, 'default', 'current')))
+            self.assertFalse(os.path.exists(os.path.join(tmpdir, 'default', 'latest')))
 
 
 if __name__ == '__main__':
