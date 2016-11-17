@@ -1,7 +1,7 @@
 Track environment specifications using a git repo
 -------------------------------------------------
 
-``conda gitenv`` is a designed to simplify the deployment centrally managed conda environments.
+``conda gitenv`` is a designed to simplify the deployment centrally managed conda environments. Change nothing
 Rather than expecting a sysadimn to administer appropriate conda commands on a live system, it decouples
 the ``conda update`` phase from the actual deployment, giving users the ability to review and prepare for
 any forthcoming changes.
